@@ -1,0 +1,35 @@
+---
+version: 3
+
+build_arg_defaults: {}
+
+dependencies:
+  ansible_core:
+    package_pip: ansible-core
+  ansible_runner:
+    package_pip: ansible-runner
+  galaxy: []
+  python: []
+  system: []
+
+images:
+  base_image:
+    name: registry.fedoraproject.org/fedora:38
+    # Other available base images:
+    #   - quay.io/rockylinux/rockylinux:9
+    #   - quay.io/centos/centos:stream9
+    #   - registry.fedoraproject.org/fedora:38
+    #   - registry.redhat.io/ansible-automation-platform-23/ee-minimal-rhel8:latest
+    #     (needs an account)
+
+# Custom package manager path for the RHEL based images
+# options:
+#  package_manager_path: /usr/bin/microdnf
+
+additional_build_files: []
+
+additional_build_steps:
+  append_final:
+    - RUN dnf install -y ffmpeg-free
+    - RUN python3 -m venv /opt/env && /opt/env/bin/pip install --no-input --upgrade pip setuptools &&
+          /opt/env/bin/pip install --no-input yt-dlp && ln -s /opt/env/bin/yt-dlp /usr/bin/yt-dlp

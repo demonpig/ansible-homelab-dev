@@ -1,0 +1,50 @@
+---
+
+- name: Automation for grabbing screenshot from video
+  hosts: all
+  gather_facts: false
+
+  vars:
+    _video_url: "{{ video_url | mandatory }}"
+    _timestamp: "{{ video_timestamp | default(10) }}"
+    _picoshare_url: "{{ picoshare_url | mandatory }}"
+
+  tasks:
+    - name: Create temp directory
+      register: tmpdir
+      ansible.builtin.tempfile:
+        state: directory
+
+      # I'm adding a timeout here so the task doesn't get hung trying to connect to an outside
+      # service.
+    - name: Download video
+      changed_when: true
+      timeout: 600
+      ansible.builtin.command:
+        creates: "{{ tmpdir.path }}/video.mp4"
+        cmd: |
+          yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' "{{ _video_url }}" --output {{ tmpdir.path }}/video.mp4
+
+    - name: Grab screenshot from the timestamp
+      changed_when: true
+      ansible.builtin.command:
+        creates: "{{ tmpdir.path }}/output.png"
+        cmd: |
+          ffmpeg -ss 00:00:{{ _timestamp }} -i {{ tmpdir.path }}/video.mp4 -frames:v 1 -q:v 2 {{ tmpdir.path }}/output.png
+
+    - name: Upload image to picoshare
+      register: response
+      no_log: "{{ nolog | default(True, True) }}"
+      ansible.builtin.uri:
+        url: "{{ _picoshare_url }}"
+        method: POST
+        return_content: true
+        remote_src: true
+        body_format: form-multipart
+        body:
+          file:
+            filename: "{{ tmpdir.path }}/output.png"
+
+    - name: Share URL
+      ansible.builtin.debug:
+        msg: "{{ response.content.strip() }}"

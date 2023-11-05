@@ -32,19 +32,18 @@
         cmd: |
           ffmpeg -ss 00:00:{{ _timestamp }} -i {{ tmpdir.path }}/video.mp4 -frames:v 1 -q:v 2 {{ tmpdir.path }}/output.png
 
-    - name: Upload image to picoshare
+      # TODO: Switch to the ansible.builtin.uri module
+    - name: Upload image to picoshare # noqa command-instead-of-module
       register: response
       no_log: "{{ nolog | default(True, True) }}"
-      ansible.builtin.uri:
-        url: "{{ _picoshare_url }}"
-        method: POST
-        return_content: true
-        remote_src: true
-        body_format: form-multipart
-        body:
-          file:
-            filename: "{{ tmpdir.path }}/output.png"
+      changed_when: true
+      ansible.builtin.command:
+        cmd: |
+          curl -skL -X POST -F "file=@{{ tmpdir.path }}/output.png" "{{ _picoshare_url }}"
 
     - name: Share URL
+      vars:
+        response_data: "{{ response.stdout | from_json }}"
       ansible.builtin.debug:
-        msg: "{{ response.content.strip() }}"
+        msg: "{{ _picoshare_url.split('/api')[0] + '/-' + response_data.id }}"
+

@@ -15,11 +15,8 @@
       ansible.builtin.tempfile:
         state: directory
 
-      # I'm adding a timeout here so the task doesn't get hung trying to connect to an outside
-      # service.
     - name: Download video
       changed_when: true
-      timeout: 600
       ansible.builtin.command:
         creates: "{{ tmpdir.path }}/video.mp4"
         cmd: |

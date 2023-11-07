@@ -1,0 +1,22 @@
+---
+
+- name: Create user accounts
+  loop: "{{ users_accounts }}"
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+
+- name: Setup SSH keys for account
+  loop: "{{ users_accounts }}"
+  when: 'item.sshkey is defined'
+  ansible.posix.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.sshkey }}"
+    exclusive: true
+    state: present
+
+- name: Enable linger for account
+  loop: "{{ users_accounts }}"
+  when: 'item.enable_linger is defined'
+  ansible.builtin.command:
+    cmd: loginctl enable-linger {{ item.name }}
+    creates: /var/lib/systemd/linger/{{ item.name }}

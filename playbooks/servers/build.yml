@@ -1,0 +1,23 @@
+---
+
+- name: User Account Setup
+  hosts: all
+  gather_facts: false
+  roles:
+    - role: users
+
+###############################################################################
+
+- name: Server Setup
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - role: devsec.hardening.ssh_hardening
+
+  tasks:
+    - name: Remove any root user password
+      become: true
+      changed_when: true
+      ansible.builtin.command:
+        cmd: passwd -d root

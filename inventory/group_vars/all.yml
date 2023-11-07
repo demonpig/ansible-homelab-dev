@@ -4,7 +4,7 @@ users_accounts:
   # This will be my account I used to log into servers
   - name: ansible
     sshkey: 'https://github.com/demonpig.keys'
-    password: "{{ password_override | default(omit) }}"
+    password: "{{ password_override | default(None) }}"
   
   # This is my service account to run services as
   - name: abc

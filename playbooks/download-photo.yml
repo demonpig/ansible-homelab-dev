@@ -8,6 +8,7 @@
     _video_url: "{{ video_url | mandatory }}"
     _timestamp: "{{ video_timestamp | default(10) }}"
     _picoshare_url: "{{ picoshare_url | mandatory }}"
+    _download_thumbnail: "{{ download_thumbnail | default(False) | bool }}"
 
   tasks:
     - name: Create temp directory
@@ -15,19 +16,45 @@
       ansible.builtin.tempfile:
         state: directory
 
-    - name: Download video
-      changed_when: true
-      ansible.builtin.command:
-        creates: "{{ tmpdir.path }}/video.mp4"
-        cmd: |
-          yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' "{{ _video_url }}" --output {{ tmpdir.path }}/video.mp4
+    - name: Getting image from video
+      block:
+        - name: Skip downloading video if only thumbnail is requested
+          when: _download_thumbnail
+          ansible.builtin.fail:
+            msg: "Thumbail of video is requested so failing out of the block"
 
-    - name: Grab screenshot from the timestamp
-      changed_when: true
-      ansible.builtin.command:
-        creates: "{{ tmpdir.path }}/output.png"
-        cmd: |
-          ffmpeg -ss {{ _timestamp | seconds_to_timestamp }} -i {{ tmpdir.path }}/video.mp4 -frames:v 1 -q:v 2 {{ tmpdir.path }}/output.png
+        # This is the best quality image
+        - name: Download video
+          ansible.builtin.command:
+            creates: "{{ tmpdir.path }}/video.mp4"
+            cmd: |
+              yt-dlp -f 'bestvideo[ext=mp4]' "{{ _video_url }}" --output {{ tmpdir.path }}/video.mp4
+
+        - name: Grab screenshot from the timestamp
+          ansible.builtin.command:
+            creates: "{{ tmpdir.path }}/output.png"
+            cmd: |
+              ffmpeg -ss {{ _timestamp | seconds_to_timestamp }} -i {{ tmpdir.path }}/video.mp4 -frames:v 1 -q:v 2 {{ tmpdir.path }}/output.png
+      rescue:
+        # This will usually get a 720p image which will have some loss in quality due to conversion to PNG.
+        # In addition, the image may not match what the timestmap in the video the user had requested.
+        - name: Download only the thumbnail of the video
+          ansible.builtin.command:
+            creates: "{{ tmpdir.path }}/thumbnail.webp"
+            cmd: |
+              yt-dlp --write-thumbnail --skip-download "{{ _video_url }}" --output {{ tmpdir.path }}/thumbnail
+
+        - name: Check for thumbnail.webp image
+          register: webp_image_path
+          ansible.builtin.stat:
+            path: "{{ tmpdir.path }}/thumbnail.webp"
+
+        - name: Convert thumbnail.webp to png
+          when: webp_image_path.stat.exists
+          ansible.builtin.command:
+            creates: "{{ tmpdir.path }}/output.png"
+            cmd: |
+              ffmpeg -i {{ tmpdir.path }}/thumbnail.webp {{ tmpdir.path }}/output.png
 
       # TODO: Switch to the ansible.builtin.uri module
     - name: Upload image to picoshare # noqa command-instead-of-module

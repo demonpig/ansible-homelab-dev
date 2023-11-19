@@ -1,0 +1,19 @@
+---
+
+- name: Testing seconds_to_timestamp filter
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: SUCCESS - Test filter
+      ansible.builtin.assert:
+        that: "'{{ '10' | seconds_to_timestamp }}' in '00:00:10'"
+
+    - block:
+        - name: FAIL - Test filter
+          ansible.builtin.assert:
+            that: "'{{ 'a' | seconds_to_timestamp }}' in '00:00:10'"
+      rescue:
+        - name: Display Failure Message
+          ansible.builtin.debug: 
+            msg: "Above test was supposed to fail"

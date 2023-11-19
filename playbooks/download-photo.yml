@@ -27,7 +27,7 @@
       ansible.builtin.command:
         creates: "{{ tmpdir.path }}/output.png"
         cmd: |
-          ffmpeg -ss 00:00:{{ _timestamp }} -i {{ tmpdir.path }}/video.mp4 -frames:v 1 -q:v 2 {{ tmpdir.path }}/output.png
+          ffmpeg -ss {{ _timestamp | seconds_to_timestamp }} -i {{ tmpdir.path }}/video.mp4 -frames:v 1 -q:v 2 {{ tmpdir.path }}/output.png
 
       # TODO: Switch to the ansible.builtin.uri module
     - name: Upload image to picoshare # noqa command-instead-of-module

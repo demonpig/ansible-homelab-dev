@@ -1,0 +1,23 @@
+DOCUMENTATION:
+  name: seconds_to_timestamp
+  author: Max Mitschke
+  version_added: 'historical'
+  short_description: Change the number of seconds into a HH:MM:SS timestamp
+  description:
+    - Seconds to timestamp converter
+    - The return value is a string.
+  positional: _input
+  options:
+    _input:
+      description: An integer of seconds
+      type: int
+      required: true
+
+EXAMPLES: |
+  # String looking like '0:00:10'
+  lola: "{{ 10 | seconds_to_timestamp }}"
+
+RETURN:
+  _value:
+    description: Number of seconds converted to a timestamp of H:MM:SS
+    type: string

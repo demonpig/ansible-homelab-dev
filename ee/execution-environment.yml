@@ -9,12 +9,15 @@ dependencies:
   ansible_runner:
     package_pip: ansible-runner
   galaxy: []
-  python: []
-  system: []
+  python:
+    - yt-dlp
+  system:
+    - git [platform:rpm]
+    - ffmpeg-free [platform:rpm]
 
 images:
   base_image:
-    name: registry.fedoraproject.org/fedora:38
+    name: registry.fedoraproject.org/fedora:39
     # Other available base images:
     #   - quay.io/rockylinux/rockylinux:9
     #   - quay.io/centos/centos:stream9
@@ -26,10 +29,11 @@ images:
 # options:
 #  package_manager_path: /usr/bin/microdnf
 
-additional_build_files: []
+additional_build_files:
+  - src: scripts
+    dest: ee_scripts
 
 additional_build_steps:
   append_final:
-    - RUN dnf install -y ffmpeg-free
-    - RUN python3 -m venv /opt/env && /opt/env/bin/pip install --no-input --upgrade pip setuptools &&
-          /opt/env/bin/pip install --no-input yt-dlp && ln -s /opt/env/bin/yt-dlp /usr/bin/yt-dlp
+    - COPY _build/ee_scripts/install-tools.sh /usr/local/sbin/
+    - RUN sh /usr/local/sbin/install-tools.sh

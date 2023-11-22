@@ -1,0 +1,36 @@
+---
+
+- name: Download Content from Internet Archive
+  hosts: all
+  gather_facts: false
+
+  vars:
+    # Options for the `ia` tools
+    _ia_identifier: "{{ identifier | mandatory }}"
+    _ia_file_type: "{{ file_type | mandatory }}"
+    _ia_retries: "{{ retries | default(10) }}"
+    _ia_exclude_files: "{{ exclude_files | default([]) }}"
+
+    # Options for the storage server
+    _ia_storage_path: "{{ storage_path | mandatory }}"
+  tasks:
+    - name: Create command
+      ansible.builtin.set_fact:
+        _ia_cmd: "ia download {{ _ia_identifier }} . -f {{ _ia_file_type }} -R {{ _ia_retries }} {{ _ia_exclude_files | create_ia_exclude_options }}"
+
+    - name: Show command
+      ansible.builtin.debug:
+        verbosity: 2
+        msg: "{{ _ia_cmd.rstrip() }}"
+
+    - name: Check if {{ _ia_storage_path }} exists # noqa name[template]
+      register: _ia_storage_path_check
+      ansible.builtin.stat:
+        path: "{{ _ia_storage_path }}"
+
+    - name: Download file(s) from Internet Archive
+      when: _ia_storage_path_check.stat.exists
+      ansible.builtin.command:
+        chdir: "{{ _ia_storage_path }}"
+        creates: "{{ _ia_storage_path }}/{{ _ia_identifier }}"
+        cmd: "{{ _ia_cmd.rstrip() }}"

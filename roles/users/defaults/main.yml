@@ -1,3 +1,17 @@
 ---
 
+# Type: List of Dictionaries
+# Dictionary Items:
+#   name          - Name of the user account
+#                   Required
+#
+#   sshkey        - SSH Keys to add to account. Normally should be a URL but can possibly use a lookup plugin
+#                   Optional
+#
+#   password      - New password to assign to user
+#                   Optional
+#
+#   enable_linger - Prevents systemd from killing rootleess services when there is no session
+#                   Optional
+
 users_accounts: []

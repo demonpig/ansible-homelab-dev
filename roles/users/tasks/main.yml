@@ -4,6 +4,7 @@
   loop: "{{ users_accounts }}"
   ansible.builtin.user:
     name: "{{ item.name }}"
+    state: present
 
 - name: Setup SSH keys for account
   loop: "{{ users_accounts }}"

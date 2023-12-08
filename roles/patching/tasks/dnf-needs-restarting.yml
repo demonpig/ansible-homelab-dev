@@ -1,0 +1,14 @@
+---
+
+# 1 = Server needs reboot
+# 0 = Server does not need a reboot
+- name: Check if system needs a reboot
+  register: _patching_requires_reboot
+  changed_when: false
+  failed_when: false
+  ansible.builtin.command: dnf needs-restarting -r
+
+- name: Set flag to restart server
+  when: _patching_requires_reboot.rc == 1
+  ansible.builtin.set_fact:
+    patching_restart_server: true

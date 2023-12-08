@@ -1,0 +1,25 @@
+---
+
+- name: Patching Playbook
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Gather minimal system facts
+      ansible.builtin.setup:
+        gather_subset: min
+
+    - name: Apply patches
+      ansible.builtin.include_role:
+        name: patching
+        apply:
+          become: true
+          become_user: root
+
+    - name: Reboot the server
+      when: 
+        - patching_restart_server is defined
+        - patching_restart_server
+      ansible.builtin.reboot:
+        test_command: ping -c 1 1.1.1.1

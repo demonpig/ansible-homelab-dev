@@ -1,0 +1,10 @@
+---
+
+- name: Run operating system-specific tasks
+  vars:
+    params:
+      skip: true
+      files:
+        - "{{ ansible_distribution | lower }}.yml"
+        - "{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_tasks: "{{ lookup('ansible.builtin.first_found', params) }}"

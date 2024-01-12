@@ -22,7 +22,6 @@
       ansible.builtin.dnf:
         name: "*"
         state: latest
-        cacheonly: true
   rescue:
     # Even if the above two tasks fail, I still want ansible to succeed. I really don't
     # want the system to be caught in a bad state. So I will need to do some experimentation

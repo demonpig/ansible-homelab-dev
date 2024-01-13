@@ -9,6 +9,9 @@
     _timestamp: "{{ video_timestamp | default(10) }}"
     _picoshare_url: "{{ picoshare_url | mandatory }}"
     _download_thumbnail: "{{ download_thumbnail | default(False) | bool }}"
+    _upload_to_picoshare: "{{ upload_to_picoshare | default(False) | bool }}"
+    _upload_to_nfs: "{{ upload_to_nfs | default(False) | bool }}"
+    _storage_path: "{{ storage_path | default('') }}"
 
   tasks:
     - name: Create temp directory
@@ -56,18 +59,30 @@
             cmd: |
               ffmpeg -i {{ tmpdir.path }}/thumbnail.webp {{ tmpdir.path }}/output.png
 
-      # TODO: Switch to the ansible.builtin.uri module
-    - name: Upload image to picoshare # noqa command-instead-of-module
-      register: response
-      no_log: "{{ nolog | default(True, True) }}"
-      changed_when: true
-      ansible.builtin.command:
-        cmd: |
-          curl -skL -X POST -F "file=@{{ tmpdir.path }}/output.png" "{{ _picoshare_url }}"
+    - name: Upload to NFS Share
+      when: _upload_to_nfs and _storage_path
+      block:
+        # TODO: Add in some checks to make sure that the following
+        #       storage path is a mounted NFS share
+        - name: Copy file to NFS share # noqa risky-file-permissions
+          ansible.builtin.copy:
+            src: "{{ tmpdir.path }}/output.png"
+            dest: "{{ _storage_path }}"
 
-    - name: Share URL
-      vars:
-        response_data: "{{ response.stdout | from_json }}"
-      ansible.builtin.debug:
-        msg: "{{ _picoshare_url.split('/api')[0] + '/-' + response_data.id }}"
+    - name: Upload to PicoShare
+      when: _upload_to_picoshare
+      block:
+        # TODO: Switch to the ansible.builtin.uri module
+        - name: Upload image to picoshare # noqa command-instead-of-module
+          register: response
+          no_log: "{{ nolog | default(True, True) }}"
+          changed_when: true
+          ansible.builtin.command:
+            cmd: |
+              curl -skL -X POST -F "file=@{{ tmpdir.path }}/output.png" "{{ _picoshare_url }}"
 
+        - name: Share URL
+          vars:
+            response_data: "{{ response.stdout | from_json }}"
+          ansible.builtin.debug:
+            msg: "{{ _picoshare_url.split('/api')[0] + '/-' + response_data.id }}"

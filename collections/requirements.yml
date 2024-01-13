@@ -3,3 +3,4 @@
 collections:
   - name: devsec.hardening
   - name: ansible.posix
+  - name: community.general

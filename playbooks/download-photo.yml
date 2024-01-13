@@ -67,7 +67,7 @@
         - name: Copy file to NFS share # noqa risky-file-permissions
           ansible.builtin.copy:
             src: "{{ tmpdir.path }}/output.png"
-            dest: "{{ _storage_path }}/output-{{ lookup('community.general.random_string') }}.png"
+            dest: "{{ _storage_path }}/output-{{ lookup('community.general.random_string', special=false) }}.png"
 
     - name: Upload to PicoShare
       when: _upload_to_picoshare

@@ -8,9 +8,9 @@
     _video_url: "{{ video_url | mandatory }}"
     _timestamp: "{{ video_timestamp | default(10) }}"
     _picoshare_url: "{{ picoshare_url | mandatory }}"
-    _download_thumbnail: "{{ download_thumbnail | default(False) | bool }}"
-    _upload_to_picoshare: "{{ upload_to_picoshare | default(False) | bool }}"
-    _upload_to_nfs: "{{ upload_to_nfs | default(False) | bool }}"
+    _download_thumbnail: "{{ download_thumbnail | default(False) }}"
+    _upload_to_picoshare: "{{ upload_to_picoshare | default(False) }}"
+    _upload_to_nfs: "{{ upload_to_nfs | default(False) }}"
     _storage_path: "{{ storage_path | default('') }}"
 
   tasks:
@@ -22,7 +22,7 @@
     - name: Getting image from video
       block:
         - name: Skip downloading video if only thumbnail is requested
-          when: _download_thumbnail
+          when: _download_thumbnail | bool
           ansible.builtin.fail:
             msg: "Thumbail of video is requested so failing out of the block"
 

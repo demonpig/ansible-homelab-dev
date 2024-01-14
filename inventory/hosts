@@ -1,9 +1,0 @@
-localhost ansible_host=127.0.0.1 ansible_connection=local
-
-# This group will contain the server(s) that will patch and update
-# awx server(s) and execution nodes
-[remote_patcher]
-
-# This group contains the servers that host the AWX application
-# and execution nodes
-[awx]

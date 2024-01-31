@@ -1,0 +1,14 @@
+---
+
+- name: Reboot Server
+  hosts: all
+  gather_facts: false
+
+  vars:
+    _dont_reboot: "{{ dont_reboot | default(False) }}"
+
+  tasks:
+    - name: Perform reboot
+      when: not _dont_reboot
+      ansible.builtin.reboot:
+        test_command: ping -c 1 1.1.1.1

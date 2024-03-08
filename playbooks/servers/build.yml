@@ -16,6 +16,9 @@
       ansible.builtin.include_role:
         name: devsec.hardening.ssh_hardening
 
+    - name: Run any handlers before proceeding
+      ansible.builtin.meta: flush_handlers
+
     - name: Remove any root user password
       become: true
       changed_when: true

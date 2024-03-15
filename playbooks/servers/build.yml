@@ -1,5 +1,25 @@
 ---
 
+- name: Fact Gathering
+  hosts: all
+  strategy: free
+  gather_facts: false
+
+  tasks:
+    - name: Get general system facts
+      ansible.builtin.setup:
+        gather_timeout: 30
+        gather_subset:
+          - 'min'
+
+    - name: Get system service facts
+      ansible.builtin.service_facts:
+
+    - name: Group hosts by os-family
+      ansible.builtin.group_by:
+        key: os_{{ ansible_os_family }}
+
+
 - name: User Account Setup
   hosts: all
   gather_facts: false
@@ -8,11 +28,23 @@
 
 
 - name: Server Setup
-  hosts: all
-  gather_facts: true
+  hosts: os_RedHat
+  gather_facts: false
+
+  pre_tasks:
+    # im including this step here just for documentation purposes
+    # most development occurred inside container where a lot of
+    # packages were missing. So I want to run a series of tasks prior
+    # to doing any "real" work
+    - name: Run baseline role against server
+      ansible.builtin.include_role:
+        name: baseline
 
   tasks:
     - name: Apply simple hardening to ssh
+      when:
+        - ansible_facts['services']['sshd.service'] is defined
+        - ansible_facts['services']['sshd.service']['state'] == "running" | default(False)
       ansible.builtin.include_role:
         name: devsec.hardening.ssh_hardening
 

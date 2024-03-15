@@ -17,7 +17,9 @@
 
 - name: Enable linger for account
   loop: "{{ users_accounts }}"
-  when: 'item.enable_linger is defined'
+  when:
+    - ansible_facts['services']['systemd-logind.service']['state'] == "running" | default(False)
+    - item.enable_linger | default(False)
   ansible.builtin.command:
     cmd: loginctl enable-linger {{ item.name }}
     creates: /var/lib/systemd/linger/{{ item.name }}

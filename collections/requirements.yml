@@ -4,3 +4,4 @@ collections:
   - name: devsec.hardening
   - name: ansible.posix
   - name: community.general
+  - name: fedora.linux_system_roles

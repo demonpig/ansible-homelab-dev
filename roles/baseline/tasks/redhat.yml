@@ -1,0 +1,9 @@
+---
+
+- name: redhat | Get variables for Red Hat-based systems
+  ansible.builtin.include_vars: 'redhat.yml'
+
+- name: redhat | Install base set of packages
+  ansible.builtin.dnf:
+    name: "{{ _baseline_rh_packages }}"
+    state: present

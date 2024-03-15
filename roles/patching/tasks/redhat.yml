@@ -1,23 +1,23 @@
 ---
 
-- name: Clean package cache
+- name: redhat | Clean package cache
   changed_when: false
   ansible.builtin.command: dnf clean all
 
-- name: Remove DNF cache directory
+- name: redhat | Remove DNF cache directory
   ansible.builtin.file:
     path: /var/cache/dnf
     state: absent
 
-- name: Update Packages Block
+- name: redhat | Update Packages Block
   block:
-    - name: Update DNF cache
+    - name: redhat | Update DNF cache     # noqa package-latest
       timeout: "{{ patching_timeout }}"
       ansible.builtin.dnf:
         update_cache: true
         state: latest
 
-    - name: Update all packages
+    - name: redhat | Update all packages  # noqa package-latest
       timeout: "{{ patching_timeout }}"
       ansible.builtin.dnf:
         name: "*"
@@ -26,14 +26,14 @@
     # Even if the above two tasks fail, I still want ansible to succeed. I really don't
     # want the system to be caught in a bad state. So I will need to do some experimentation
     # to see if there is a way to undo the above upgrade in case there is a failure
-    - name: Clean package cache
+    - name: redhat | Clean package cache
       changed_when: false
       ansible.builtin.command: dnf clean all
 
-    - name: Remove DNF cache directory
+    - name: redhat | Remove DNF cache directory
       ansible.builtin.file:
         path: /var/cache/dnf
         state: absent
 
-- name: Check for server reboots
+- name: redhat | Check for server reboots
   ansible.builtin.include_tasks: dnf-needs-restarting.yml

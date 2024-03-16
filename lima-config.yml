@@ -1,0 +1,19 @@
+---
+
+# Development Environment
+
+images:
+  - location: "https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/AlmaLinux-9-GenericCloud-latest.x86_64.qcow2"
+    arch: "x86_64"
+    
+  - location: "https://repo.almalinux.org/almalinux/9/cloud/aarch64/images/AlmaLinux-9-GenericCloud-latest.aarch64.qcow2"
+    arch: "aarch64"
+
+mounts:
+  # This isn't my ideal solution but im not sure how to configure lima to just mount
+  # the current directory
+- location: "~"
+  writable: true
+
+- location: "/tmp/lima"
+  writable: true

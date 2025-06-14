@@ -1,0 +1,9 @@
+---
+
+- name: Ping Playbook
+  hosts: all
+  gather_facts: "{{ gather_facts | default(False) }}"
+
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:

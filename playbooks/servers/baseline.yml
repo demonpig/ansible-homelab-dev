@@ -4,9 +4,11 @@
   hosts: all:!windows:!local
   gather_facts: false
 
+
+
   tasks:
     - name: Gather Facts
-      timeout: "{{ task_timeout }}"
+      timeout: 60
       ansible.builtin.setup:
 
     - name: RHEL | Set /tmp to tmpfs

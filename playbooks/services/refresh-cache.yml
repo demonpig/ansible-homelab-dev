@@ -1,0 +1,20 @@
+---
+
+- name: Refresh Package Cache
+  hosts: "{{ hosts | default('') }}"
+  gather_facts: false
+
+  tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+        gather_subset: ['min']
+
+    - name: Clear package manager cache
+      ansible.builtin.include_role:
+        name: pkg-mgmt
+        tasks_from: clear-cache
+
+    - name: Update package manager cache
+      ansible.builtin.include_role:
+        name: pkg-mgmt
+        tasks_from: update-cache

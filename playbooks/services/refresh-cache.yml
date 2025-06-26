@@ -1,7 +1,7 @@
 ---
 
 - name: Refresh Package Cache
-  hosts: "{{ hosts | default('') }}"
+  hosts: "{{ host_limit | default(omit) }}"
   gather_facts: false
 
   tasks:

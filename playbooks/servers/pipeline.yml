@@ -1,0 +1,5 @@
+---
+
+- ansible.builtin.import_playbook: baseline.yml
+
+- ansible.builtin.import_playbook: patching.yml

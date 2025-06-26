@@ -1,0 +1,14 @@
+---
+
+- name: clear-cache | DNF Cache
+  when: ansible_os_family | lower == "redhat"
+  block:
+    - name: clear-cache | Clear DNF cache
+      become: true
+      ansible.builtin.command: dnf clean all
+
+    - name: clear-cache | Remove DNF cache directory
+      become: true
+      ansible.builtin.file:
+        path: /var/cache/dnf
+        state: absent

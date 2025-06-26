@@ -1,0 +1,6 @@
+---
+
+- name: update-cache | DNF Cache
+  when: ansible_os_family | lower == "redhat"
+  ansible.builtin.dnf:
+    update_cache: true

@@ -1,0 +1,26 @@
+---
+
+- name: Server Baseline Configuration Playbook
+  hosts: all:!windows:!local
+  gather_facts: false
+
+  tasks:
+    - name: Gather Facts
+      timeout: "{{ task_timeout }}"
+      ansible.builtin.setup:
+
+    - name: RHEL | Set /tmp to tmpfs
+      when: ansible_os_family | lower == 'redhat' and 
+            ansible_distribution_major_version is version(version='8', operator='>=')
+      ansible.builtin.systemd_service:
+        name: tmp.mount
+        enabled: true
+        masked: no
+
+    - name: Remove the password for root
+      changed_when: true
+      ansible.builtin.command: passwd -d root
+
+    - name: Harden the SSHD daemon
+      ansible.builtin.include_role:
+        name: devsec.hardening.ssh_hardening

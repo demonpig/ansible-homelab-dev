@@ -1,0 +1,53 @@
+---
+
+- name: Server Patching Playbook
+  hosts: all:!windows:!local
+  gather_facts: false
+
+  vars:
+    task_timeout: 600
+    should_reboot: true
+
+  tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+        gather_subset: ['min']
+
+    - name: Clear package manager cache
+      ansible.builtin.include_role:
+        name: pkg-mgmt
+        tasks_from: clear-cache
+
+    - name: Update package manager cache
+      ansible.builtin.include_role:
+        name: pkg-mgmt
+        tasks_from: update-cache
+
+    - name: Update all packages
+      timeout: "{{ task_timeout }}"
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+    - name: Reboot Server Block
+      when: should_reboot | bool
+      block:
+        # RHEL Servers
+        - name: RHEL | Check if system needs to be rebooted
+          when: ansible_os_family | lower == "redhat"
+          failed_when: false
+          changed_when: false
+          register: _rh_require_reboot
+          ansible.builtin.command: dnf needs-restarting -r
+
+        - name: RHEL | Set fact server needs a reboot
+          when: ansible_os_family | lower == "redhat" and
+                _rh_require_reboot.rc == 0
+          ansible.builtin.set_fact:
+            _require_reboot: false
+
+        - name: Reboot the server (if required)
+          when: _require_reboot | default(true)
+          timeout: "{{ task_timeout }}"
+          ansible.builtin.reboot:
+            test_command: hostnamectl

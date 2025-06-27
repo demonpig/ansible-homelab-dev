@@ -1,7 +1,7 @@
 ---
 
 - name: Reboot Server
-  hosts: "{{ host_limit | default(omit) }}"
+  hosts: all
   gather_facts: false
 
   vars:

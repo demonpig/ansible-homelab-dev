@@ -4,8 +4,6 @@
   hosts: all:!windows:!local
   gather_facts: false
 
-
-
   tasks:
     - name: Gather Facts
       timeout: 60
@@ -22,6 +20,14 @@
     - name: Remove the password for root
       changed_when: true
       ansible.builtin.command: passwd -d root
+
+    - name: Update user account ssh keys
+      when: user_sshkey_url is defined
+      ansible.posix.authorized_key:
+        user: "{{ user_name | default(ansible_user) }}"
+        key: "{{ user_sshkey_url }}"
+        exclusive: true
+        state: present
 
     - name: Harden the SSHD daemon
       ansible.builtin.include_role:
